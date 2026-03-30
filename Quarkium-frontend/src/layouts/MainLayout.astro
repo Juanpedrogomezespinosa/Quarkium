@@ -1,0 +1,41 @@
+---
+// src/layouts/MainLayout.astro
+import '../styles/global.css'; // <-- Importante: el CLI de Astro te pidió esto
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Reserva tu cita online fácilmente" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} | Quarkium SaaS</title>
+  </head>
+  <body class="bg-gray-50 text-gray-900 font-sans antialiased">
+    
+    <header class="bg-white shadow-sm py-4">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+        <div class="font-bold text-xl text-blue-600">Quarkium</div>
+        <nav>
+          <a href="/login" class="text-sm font-medium text-gray-700 hover:text-blue-600">Acceso Empleados</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="min-h-screen">
+      <slot />
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-12 text-center">
+      <p class="text-sm">Powered by Quarkium © {new Date().getFullYear()}</p>
+    </footer>
+
+  </body>
+</html>
