@@ -1,36 +1,32 @@
+// backend/src/server.js
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const authRoutes = require("./routes/v1/auth");
+const userRoutes = require("./routes/v1/users");
 require("dotenv").config();
 
-// Inicializar la app
+// Iniciamos la conexión a la base de datos
+require("./config/database");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares Globales
-app.use(helmet()); // Seguridad en cabeceras HTTP
-app.use(cors()); // Permitir peticiones del frontend Astro/React
+app.use(helmet());
+app.use(cors());
+app.use(express.json()); // Parsea los body en JSON
 
-// IMPORTANTE: Stripe Webhooks necesitan el body en crudo (raw), no en JSON.
-// Configurar JSON parser solo para rutas que no sean webhooks de Stripe.
-app.use((req, res, next) => {
-  if (req.originalUrl === "/api/v1/webhooks/stripe") {
-    next();
-  } else {
-    express.json()(req, res, next);
-  }
-});
-
-// Rutas base (Placeholder)
+// Ruta de prueba
 app.get("/api/v1/health", (req, res) => {
   res
     .status(200)
-    .json({ status: "OK", message: "SaaS Peluquería API funcionando 🚀" });
+    .json({ status: "OK", message: "API Quarkium funcionando 🚀" });
 });
 
-// Arrancar el servidor
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", userRoutes);
+
 app.listen(PORT, () => {
-  console.log(
-    `🚀 Servidor corriendo en modo ${process.env.NODE_ENV} en el puerto ${PORT}`,
-  );
+  console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
 });
