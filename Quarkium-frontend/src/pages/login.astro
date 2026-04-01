@@ -2,27 +2,28 @@
 // src/pages/login.astro
 import MainLayout from '../layouts/MainLayout.astro';
 import LoginForm from '../components/react/LoginForm';
-import '../styles/global.css';
 ---
 
-<MainLayout title="Login | The Bespoke Craftsman">
-  <main class="min-h-screen flex flex-col items-center justify-center relative px-6 py-12 midnight-fade">
+<MainLayout title="Login | Quarkium">
+  <div class="flex-grow flex items-center justify-center relative px-6 py-12 w-full h-full">
     
-    <div class="fixed inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');"></div>
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');"></div>
 
-    <div class="text-center mb-12 relative z-10">
-      <h1 class="font-headline italic text-3xl md:text-4xl text-primary tracking-tight mb-2">
-        The Bespoke Craftsman
-      </h1>
-      <p class="font-label text-on-surface-variant uppercase tracking-[0.2em] text-[10px]">
-        ESTABLISHED IN EXCELLENCE
-      </p>
+    <div class="relative z-10 w-full flex flex-col items-center">
+      <div class="text-center mb-12">
+        <h1 class="font-headline italic text-3xl md:text-4xl text-primary tracking-tight mb-2">
+          Quarkium
+        </h1>
+        <p class="font-label text-on-surface-variant uppercase tracking-[0.2em] text-[10px]">
+          ESTABLISHED IN EXCELLENCE
+        </p>
+      </div>
+
+      <LoginForm client:load />
     </div>
 
-    <LoginForm client:load />
-
-    <div class="fixed bottom-12 right-12 hidden lg:block opacity-20 pointer-events-none transform rotate-90 origin-bottom-right">
+    <div class="absolute bottom-12 right-12 hidden lg:block opacity-20 pointer-events-none transform rotate-90 origin-bottom-right">
       <span class="font-headline text-6xl italic text-outline select-none">Crafting Perfection</span>
     </div>
-  </main>
+  </div>
 </MainLayout>

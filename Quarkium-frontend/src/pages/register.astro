@@ -1,0 +1,18 @@
+---
+// src/pages/register.astro
+import MainLayout from '../layouts/MainLayout.astro';
+import RegisterForm from '../components/react/RegisterForm';
+---
+
+<MainLayout title="Join the Society | Quarkium">
+  <div class="flex-grow flex items-center justify-center relative px-4 py-12 w-full h-full overflow-hidden">
+    
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]"></div>
+      <div class="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px]"></div>
+    </div>
+
+    <RegisterForm client:load />
+
+  </div>
+</MainLayout>

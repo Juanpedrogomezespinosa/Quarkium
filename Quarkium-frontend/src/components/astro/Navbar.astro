@@ -1,0 +1,21 @@
+---
+// src/components/astro/Navbar.astro
+---
+<header class="w-full border-b border-outline-variant/20 bg-surface-container-lowest/80 backdrop-blur-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <span class="font-headline italic text-2xl text-primary tracking-tight">Quarkium</span>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-8">
+      <a href="/book" class="font-label text-xs uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Book Appointment</a>
+      <a href="/login" class="font-label text-xs uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Client Portal</a>
+    </nav>
+
+    <div class="flex items-center">
+       <a href="/admin" class="font-label text-[10px] uppercase tracking-[0.2em] text-outline hover:text-primary transition-colors">
+         Staff Access
+       </a>
+    </div>
+  </div>
+</header>
