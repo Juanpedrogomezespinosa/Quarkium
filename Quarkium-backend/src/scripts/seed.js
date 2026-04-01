@@ -22,10 +22,30 @@ async function runSeed() {
       process.exit(1);
     }
 
-    // 1. Desactivar validación de Foreign Keys para poder vaciar
+    // 1. Parche de Esquema (Schema Migration)
+    // Nos aseguramos de que la tabla appointments tenga el campo total_price
+    try {
+      console.log("🛠️ Verificando esquema de la base de datos...");
+      await pool.query(
+        "ALTER TABLE appointments ADD COLUMN total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER end_time;",
+      );
+      console.log("✅ Columna 'total_price' añadida a 'appointments'.");
+    } catch (err) {
+      // Si el error es 1060 (ER_DUP_FIELDNAME), significa que ya existe, lo cual es perfecto.
+      if (err.code === "ER_DUP_FIELDNAME") {
+        console.log(
+          "✅ La columna 'total_price' ya existe (Omitiendo parche).",
+        );
+      } else {
+        // Si es un error distinto, sí queremos que explote para revisarlo
+        throw err;
+      }
+    }
+
+    // 2. Desactivar validación de Foreign Keys para poder vaciar
     await pool.query("SET FOREIGN_KEY_CHECKS = 0;");
 
-    // 2. Vaciar las tablas en orden
+    // 3. Vaciar las tablas en orden
     console.log("🧹 Vaciando tablas...");
     const tables = [
       "payments",
@@ -39,11 +59,11 @@ async function runSeed() {
       await pool.query(`TRUNCATE TABLE ${table};`);
     }
 
-    // 3. Reactivar Foreign Keys
+    // 4. Reactivar Foreign Keys
     await pool.query("SET FOREIGN_KEY_CHECKS = 1;");
     console.log("✅ Base de datos reseteada.");
 
-    // 4. Crear el Tenant inicial
+    // 5. Crear el Tenant inicial
     console.log("🌱 Creando Tenant de prueba...");
     const [tenantRes] = await pool.execute(
       `INSERT INTO tenants (name, subdomain) VALUES (?, ?)`,
@@ -51,7 +71,7 @@ async function runSeed() {
     );
     const tenantId = tenantRes.insertId;
 
-    // 5. Crear el Usuario Admin usando las variables de entorno
+    // 6. Crear el Usuario Admin usando las variables de entorno
     console.log("👑 Creando Perfil de Administrador de forma segura...");
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(adminPassword, salt);
