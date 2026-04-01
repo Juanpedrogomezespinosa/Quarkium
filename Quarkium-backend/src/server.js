@@ -4,6 +4,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const authRoutes = require("./routes/v1/auth");
 const userRoutes = require("./routes/v1/users");
+const serviceRoutes = require("./routes/v1/services");
 require("dotenv").config();
 
 // Iniciamos la conexión a la base de datos
@@ -26,6 +27,7 @@ app.get("/api/v1/health", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/services", serviceRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
