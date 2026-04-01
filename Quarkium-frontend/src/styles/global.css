@@ -93,3 +93,12 @@
     left: 200%;
   }
 }
+
+/* Añadir al final de src/styles/global.css */
+@utility midnight-fade-bg {
+  background: linear-gradient(to bottom, #0e0e0e 0%, #131313 100%);
+}
+
+.text-glow {
+  text-shadow: 0 0 15px rgba(242, 202, 80, 0.3);
+}

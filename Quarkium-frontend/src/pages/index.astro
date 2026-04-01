@@ -1,32 +1,20 @@
 ---
 // src/pages/index.astro
 import MainLayout from '../layouts/MainLayout.astro';
+import HeroSection from '../components/react/home/HeroSection';
+import ServicesSection from '../components/react/home/ServicesSection';
+import TestimonialSection from '../components/react/home/TestimonialSection';
+import CtaSection from '../components/react/home/CtaSection';
 ---
 
-<MainLayout title="Quarkium - Prueba Tailwind">
-  <div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-    
-    <div class="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden border-t-4 border-blue-600 transition-all hover:shadow-2xl hover:-translate-y-1">
-      
-      <div class="p-8">
-        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold tracking-wide uppercase mb-4">
-          Sistema Activo
-        </span>
-        
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">
-          ¡Tailwind Funciona! 🚀
-        </h1>
-        
-        <p class="text-gray-500 mb-6 leading-relaxed">
-          Si estás viendo esta tarjeta con sombras, bordes redondeados y el botón tiene un gradiente que cambia al pasar el ratón, significa que la integración de Astro y Tailwind es un éxito.
-        </p>
-        
-        <button class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors duration-300">
-          Comenzar Desarrollo
-        </button>
-      </div>
-      
-    </div>
-    
+<MainLayout title="Inicio" description="Ingeniería de precisión para el caballero moderno.">
+  
+  <HeroSection />
+
+  <div class="midnight-fade-bg py-24 space-y-32">
+    <ServicesSection />
+    <TestimonialSection />
+    <CtaSection />
   </div>
+
 </MainLayout>
