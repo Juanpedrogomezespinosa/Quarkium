@@ -8,6 +8,7 @@ const serviceRoutes = require("./routes/v1/services");
 const tenantRoutes = require("./routes/v1/tenants");
 const scheduleRoutes = require("./routes/v1/barberSchedule");
 const appointmentRoutes = require("./routes/v1/appointments");
+const metricsRoutes = require("./routes/v1/metrics");
 
 require("dotenv").config();
 
@@ -35,6 +36,7 @@ app.use("/api/v1/services", serviceRoutes);
 app.use("/api/v1/tenants", tenantRoutes);
 app.use("/api/v1/schedules", scheduleRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
+app.use("/api/v1/metrics", metricsRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
