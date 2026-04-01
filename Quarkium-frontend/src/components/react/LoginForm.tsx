@@ -1,37 +1,59 @@
 // src/components/react/LoginForm.tsx
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { useAuthStore } from "../../store/authStore";
 
-export default function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+// 1. Definimos el esquema de validación con Zod
+const loginSchema = z.object({
+  email: z.string().email({ message: "Por favor, introduce un correo válido" }),
+  password: z
+    .string()
+    .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+});
 
+// Extraemos el tipo de TypeScript desde el esquema
+type LoginFormValues = z.infer<typeof loginSchema>;
+
+export default function LoginForm() {
+  const [apiError, setApiError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  // 2. Inicializamos react-hook-form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  // 3. Lógica de envío al backend
+  const onSubmit = async (data: LoginFormValues) => {
+    setApiError("");
     setIsLoading(true);
 
     try {
       const response = await fetch("http://localhost:3000/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, tenant_id: 1 }), // Simulamos que estamos en el tenant 1
+        // Enviamos los datos validados + el tenant_id fijo por ahora
+        body: JSON.stringify({ ...data, tenant_id: 1 }),
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
 
-      if (!response.ok) throw new Error(data.error || "Error de autenticación");
+      if (!response.ok)
+        throw new Error(responseData.error || "Error de autenticación");
 
-      setAuth(data.token, data.role);
+      // Zustand guarda el token automáticamente en el localStorage
+      setAuth(responseData.token, responseData.role);
 
-      // Redirigir al dashboard según el rol
-      window.location.href = data.role === "admin" ? "/admin" : "/book";
+      window.location.href = responseData.role === "admin" ? "/admin" : "/book";
     } catch (err: any) {
-      setError(err.message);
+      setApiError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -45,25 +67,35 @@ export default function LoginForm() {
         Portal del Cliente
       </h2>
 
-      {error && (
+      {apiError && (
         <div className="bg-error/10 text-error p-3 text-xs mb-4 rounded border border-error/20">
-          {error}
+          {apiError}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 relative z-10"
+      >
         <div className="space-y-1.5">
           <label className="font-label text-[10px] uppercase tracking-widest text-outline">
             Correo Electrónico
           </label>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary text-on-surface py-3 px-1 transition-all duration-300 placeholder:text-outline/40 placeholder:font-light focus:outline-none"
+            {...register("email")}
+            className={`w-full bg-surface-container-low border-b-2 ${
+              errors.email
+                ? "border-error"
+                : "border-outline-variant/30 focus:border-primary"
+            } text-on-surface py-3 px-1 transition-all duration-300 placeholder:text-outline/40 placeholder:font-light focus:outline-none`}
             placeholder="cliente@ejemplo.com"
           />
+          {errors.email && (
+            <p className="text-error text-[10px] mt-1">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -72,12 +104,19 @@ export default function LoginForm() {
           </label>
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary text-on-surface py-3 px-1 transition-all duration-300 placeholder:text-outline/40 focus:outline-none"
+            {...register("password")}
+            className={`w-full bg-surface-container-low border-b-2 ${
+              errors.password
+                ? "border-error"
+                : "border-outline-variant/30 focus:border-primary"
+            } text-on-surface py-3 px-1 transition-all duration-300 placeholder:text-outline/40 focus:outline-none`}
             placeholder="••••••••"
           />
+          {errors.password && (
+            <p className="text-error text-[10px] mt-1">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         <button

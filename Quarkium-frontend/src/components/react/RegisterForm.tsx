@@ -1,45 +1,73 @@
 // src/components/react/RegisterForm.tsx
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+// 1. Esquema de validación estricto con máxima seguridad
+const registerSchema = z.object({
+  first_name: z
+    .string()
+    .min(2, { message: "El nombre es obligatorio (mín. 2 letras)" }),
+  last_name: z.string().min(2, { message: "El apellido es obligatorio" }),
+  email: z.string().email({ message: "Introduce un correo válido" }),
+  phone: z
+    .string()
+    .min(9, { message: "El teléfono debe tener al menos 9 caracteres" })
+    .optional()
+    .or(z.literal("")),
+  password: z
+    .string()
+    .min(8, { message: "Mínimo 8 caracteres" })
+    .regex(/[A-Z]/, { message: "Debe contener al menos una mayúscula" })
+    .regex(/[0-9]/, { message: "Debe contener al menos un número" })
+    .regex(/[^a-zA-Z0-9]/, {
+      message: "Debe contener al menos un carácter especial",
+    }),
+  tos: z.literal(true, {
+    message: "Debes aceptar los términos y reglas",
+  }),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const onSubmit = async (data: RegisterFormValues) => {
+    setApiError("");
     setIsLoading(true);
 
     try {
+      const { tos, ...submitData } = data;
+
       const response = await fetch(
         "http://localhost:3000/api/v1/auth/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...formData, tenant_id: 1 }), // Simulamos tenant 1 por ahora
+          body: JSON.stringify({ ...submitData, tenant_id: 1 }),
         },
       );
 
-      const data = await response.json();
+      const responseData = await response.json();
       if (!response.ok)
-        throw new Error(data.error || "Error al registrar la cuenta");
+        throw new Error(responseData.error || "Error al registrar la cuenta");
 
       setSuccess(true);
       setTimeout(() => (window.location.href = "/login"), 2500);
     } catch (err: any) {
-      setError(err.message);
+      setApiError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +91,7 @@ export default function RegisterForm() {
 
   return (
     <div className="relative z-10 w-full max-w-5xl grid md:grid-cols-2 bg-surface shadow-2xl overflow-hidden rounded-lg border border-outline-variant/20">
-      {/* Branding/Image Side (Left) */}
+      {/* Branding Side (Left) */}
       <div className="hidden md:flex flex-col justify-between p-12 bg-surface-container-low border-r border-outline-variant/10 relative">
         <div className="relative z-20">
           <h1 className="text-2xl font-headline italic font-bold text-primary tracking-tight mb-8">
@@ -100,8 +128,6 @@ export default function RegisterForm() {
             </div>
           </div>
         </div>
-
-        {/* Abstract Artistic Background Image */}
         <div className="absolute inset-0 opacity-10 grayscale pointer-events-none">
           <img
             className="w-full h-full object-cover"
@@ -122,145 +148,141 @@ export default function RegisterForm() {
               Paso 01: Creación de Perfil
             </p>
           </div>
-          {/* Barber's Blade Progress Bar */}
           <div className="w-24 h-1 bg-surface-container-highest rounded-full blade-progress">
             <div className="h-full w-1/4 gold-gradient"></div>
           </div>
         </div>
 
-        {error && (
+        {apiError && (
           <div className="bg-error/10 text-error p-3 text-xs mb-6 rounded border border-error/20">
-            {error}
+            {apiError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6 relative z-10"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label
-                className="block text-xs uppercase tracking-widest text-outline font-semibold"
-                htmlFor="first_name"
-              >
+              <label className="block text-xs uppercase tracking-widest text-outline font-semibold">
                 Nombre
               </label>
               <input
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none"
-                id="first_name"
-                name="first_name"
+                {...register("first_name")}
+                className={`w-full bg-surface-container-low border-b-2 ${errors.first_name ? "border-error" : "border-outline-variant/30 focus:border-primary"} border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none`}
                 type="text"
                 placeholder="ALEJANDRO"
-                required
-                value={formData.first_name}
-                onChange={handleChange}
               />
+              {errors.first_name && (
+                <p className="text-error text-[10px] mt-1">
+                  {errors.first_name.message}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
-              <label
-                className="block text-xs uppercase tracking-widest text-outline font-semibold"
-                htmlFor="last_name"
-              >
+              <label className="block text-xs uppercase tracking-widest text-outline font-semibold">
                 Apellidos
               </label>
               <input
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none"
-                id="last_name"
-                name="last_name"
+                {...register("last_name")}
+                className={`w-full bg-surface-container-low border-b-2 ${errors.last_name ? "border-error" : "border-outline-variant/30 focus:border-primary"} border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none`}
                 type="text"
                 placeholder="GARCÍA"
-                required
-                value={formData.last_name}
-                onChange={handleChange}
               />
+              {errors.last_name && (
+                <p className="text-error text-[10px] mt-1">
+                  {errors.last_name.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label
-                className="block text-xs uppercase tracking-widest text-outline font-semibold"
-                htmlFor="email"
-              >
+              <label className="block text-xs uppercase tracking-widest text-outline font-semibold">
                 Correo Electrónico
               </label>
               <input
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none"
-                id="email"
-                name="email"
+                {...register("email")}
+                className={`w-full bg-surface-container-low border-b-2 ${errors.email ? "border-error" : "border-outline-variant/30 focus:border-primary"} border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none`}
                 type="email"
-                placeholder="alex@sterling.com"
-                required
-                value={formData.email}
-                onChange={handleChange}
+                placeholder="alex@ejemplo.com"
               />
+              {errors.email && (
+                <p className="text-error text-[10px] mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
-              <label
-                className="block text-xs uppercase tracking-widest text-outline font-semibold"
-                htmlFor="phone"
-              >
+              <label className="block text-xs uppercase tracking-widest text-outline font-semibold">
                 Teléfono
               </label>
               <input
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none"
-                id="phone"
-                name="phone"
+                {...register("phone")}
+                className={`w-full bg-surface-container-low border-b-2 ${errors.phone ? "border-error" : "border-outline-variant/30 focus:border-primary"} border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none`}
                 type="tel"
                 placeholder="+34 600 000 000"
-                value={formData.phone}
-                onChange={handleChange}
               />
+              {errors.phone && (
+                <p className="text-error text-[10px] mt-1">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="space-y-1">
-            <label
-              className="block text-xs uppercase tracking-widest text-outline font-semibold"
-              htmlFor="password"
-            >
+            <label className="block text-xs uppercase tracking-widest text-outline font-semibold">
               Contraseña de Seguridad
             </label>
             <div className="relative">
               <input
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none"
-                id="password"
-                name="password"
+                {...register("password")}
+                className={`w-full bg-surface-container-low border-b-2 ${errors.password ? "border-error" : "border-outline-variant/30 focus:border-primary"} border-t-0 border-x-0 px-0 py-3 text-on-surface placeholder:text-outline/40 focus:ring-0 transition-colors focus:outline-none`}
                 type="password"
                 placeholder="••••••••••••"
-                required
-                value={formData.password}
-                onChange={handleChange}
               />
+              {errors.password && (
+                <p className="text-error text-[10px] mt-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="flex items-start gap-3 py-2">
-            <div className="relative flex items-center h-5">
-              <input
-                className="w-4 h-4 rounded-sm border-outline-variant bg-surface-container-low text-primary focus:ring-primary/20 focus:ring-offset-0"
-                id="tos"
-                type="checkbox"
-                required
-              />
+          <div className="flex flex-col gap-1 py-2">
+            <div className="flex items-start gap-3">
+              <div className="relative flex items-center h-5">
+                <input
+                  {...register("tos")}
+                  className={`w-4 h-4 rounded-sm bg-surface-container-low focus:ring-primary/20 focus:ring-offset-0 ${errors.tos ? "border-error text-error" : "border-outline-variant text-primary"}`}
+                  type="checkbox"
+                />
+              </div>
+              <label className="text-xs text-on-surface-variant leading-normal">
+                Acepto los{" "}
+                <a
+                  className="text-primary hover:underline transition-all"
+                  href="#"
+                >
+                  Términos del Servicio
+                </a>{" "}
+                y las Reglas de la Sociedad.
+              </label>
             </div>
-            <label
-              className="text-xs text-on-surface-variant leading-normal"
-              htmlFor="tos"
-            >
-              Acepto los{" "}
-              <a
-                className="text-primary hover:underline transition-all"
-                href="#"
-              >
-                Términos del Servicio
-              </a>{" "}
-              y las Reglas de la Sociedad.
-            </label>
+            {errors.tos && (
+              <p className="text-error text-[10px] ml-7">
+                {errors.tos.message}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full gold-gradient text-on-primary font-body font-bold py-4 rounded shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all uppercase trackingest text-sm active:scale-[0.98] disabled:opacity-50"
+            className="w-full gold-gradient text-on-primary font-body font-bold py-4 rounded shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all uppercase tracking-widest text-sm active:scale-[0.98] disabled:opacity-50"
           >
             {isLoading ? "Creando Perfil..." : "Únete a la Sociedad"}
           </button>
@@ -275,7 +297,6 @@ export default function RegisterForm() {
           </div>
         </div>
 
-        {/* Cambiado: Flex centrado y un solo botón de Google con max-width */}
         <div className="mt-8 flex justify-center relative z-10">
           <button
             type="button"
