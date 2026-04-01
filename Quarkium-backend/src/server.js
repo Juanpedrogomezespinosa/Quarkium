@@ -6,6 +6,7 @@ const authRoutes = require("./routes/v1/auth");
 const userRoutes = require("./routes/v1/users");
 const serviceRoutes = require("./routes/v1/services");
 const tenantRoutes = require("./routes/v1/tenants");
+const scheduleRoutes = require("./routes/v1/barberSchedule");
 require("dotenv").config();
 
 // Iniciamos la conexión a la base de datos
@@ -30,6 +31,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/services", serviceRoutes);
 app.use("/api/v1/tenants", tenantRoutes);
+app.use("/api/v1/schedules", scheduleRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
